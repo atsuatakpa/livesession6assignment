@@ -1,0 +1,80 @@
+---
+title: "code_rollingsales_bronx"
+author: "Jostein Barry-Straume"
+date: "6/20/2017"
+output: html_document
+---
+
+## Author: Benjamin Reddy
+## Taken from pages 49-50 of O'Neil and Schutt
+> Provided code is fashioned to clean and explore the rolling sales of the Bronx.
+
+# Install the necessary package(s)
+```{r echo=TRUE}
+library(plyr)
+```
+
+# Set working directory
+```{r echo=TRUE}
+setwd("/Users/Jostein/Grad School/SMU/Doing_Data_Science/unit_6/livesession6assignment")
+```
+
+[http://www1.nyc.gov/site/finance/taxes/property-rolling-sales-data.page](http://www1.nyc.gov/site/finance/taxes/property-rolling-sales-data.page)
+
+# Read the CSV file
+```{r echo=TRUE}
+bk <- read.csv("/Users/Jostein/Grad School/SMU/Doing_Data_Science/unit_6/livesession6assignment/data/rollingsales_bronx.csv",skip=4,header=TRUE)
+```
+
+# Check the data
+## And compactly display the internal structure
+```{r echo=TRUE}
+head(bk)
+summary(bk)
+str(bk) # Very handy function!
+```
+
+# Clean and format the data with regular expressions
+```{r echo=TRUE}
+bk$SALE.PRICE.N <- as.numeric(gsub("[^[:digit:]]","", bk$SALE.PRICE))
+count(is.na(bk$SALE.PRICE.N))
+
+names(bk) <- tolower(names(bk)) # make all variable names lower case
+```
+
+## Get rid of leading digits
+```{r echo=TRUE}
+bk$gross.sqft <- as.numeric(gsub("[^[:digit:]]","", bk$gross.square.feet))
+bk$land.sqft <- as.numeric(gsub("[^[:digit:]]","", bk$land.square.feet))
+bk$year.built <- as.numeric(as.character(bk$year.built))
+```
+
+## Explore the data to make sure there's not anything
+## weird going on with sale prices
+```{r echo=TRUE}
+attach(bk)
+hist(sale.price.n) 
+detach(bk)
+```
+
+## Keep only the actual sales
+```{r echo=TRUE}
+bk.sale <- bk[bk$sale.price.n!=0,]
+plot(bk.sale$gross.sqft,bk.sale$sale.price.n)
+plot(log10(bk.sale$gross.sqft),log10(bk.sale$sale.price.n))
+```
+
+## for now, let's look at 1-, 2-, and 3-family homes
+```{r echo=TRUE}
+bk.homes <- bk.sale[which(grepl("FAMILY",bk.sale$building.class.category)),]
+dim(bk.homes)
+plot(log10(bk.homes$gross.sqft),log10(bk.homes$sale.price.n))
+summary(bk.homes[which(bk.homes$sale.price.n<100000),])
+```
+
+## remove outliers that seem like they weren't actual sales
+```{r echo=TRUE}
+bk.homes$outliers <- (log10(bk.homes$sale.price.n) <=5) + 0
+bk.homes <- bk.homes[which(bk.homes$outliers==0),]
+plot(log10(bk.homes$gross.sqft),log10(bk.homes$sale.price.n))
+```

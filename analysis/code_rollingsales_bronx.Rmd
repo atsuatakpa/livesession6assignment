@@ -64,7 +64,7 @@ plot(bk.sale$gross.sqft,bk.sale$sale.price.n)
 plot(log10(bk.sale$gross.sqft),log10(bk.sale$sale.price.n))
 ```
 
-## for now, let's look at 1-, 2-, and 3-family homes
+## For now, let's look at 1-, 2-, and 3-family homes
 ```{r echo=TRUE}
 bk.homes <- bk.sale[which(grepl("FAMILY",bk.sale$building.class.category)),]
 dim(bk.homes)
@@ -72,7 +72,7 @@ plot(log10(bk.homes$gross.sqft),log10(bk.homes$sale.price.n))
 summary(bk.homes[which(bk.homes$sale.price.n<100000),])
 ```
 
-## remove outliers that seem like they weren't actual sales
+## Remove outliers that seem like they weren't actual sales
 ```{r echo=TRUE}
 bk.homes$outliers <- (log10(bk.homes$sale.price.n) <=5) + 0
 bk.homes <- bk.homes[which(bk.homes$outliers==0),]
